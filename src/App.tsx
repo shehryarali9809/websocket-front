@@ -63,28 +63,46 @@ function App() {
     }
   }
 
-  if (!isJoined) {
-    return (
-      <div className="container">
-        <h1>Join Chat Room</h1>
-        <div className="join-form">
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
-          />
-          <input
-            type="text"
-            value={room}
-            onChange={(e) => setRoom(e.target.value)}
-            placeholder="Enter room number"
-          />
-          <button onClick={joinRoom}>Join Room</button>
+
+if (!isJoined) {
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <h1>Welcome to Chat</h1>
+          <p>Join a room to start chatting</p>
+        </div>
+        <div className="login-form">
+          <div className="input-group">
+            <label>Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+            />
+          </div>
+          <div className="input-group">
+            <label>Room</label>
+            <input
+              type="text"
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              placeholder="Enter room number"
+            />
+          </div>
+          <button 
+            className="join-button"
+            onClick={joinRoom}
+            disabled={!username || !room}
+          >
+            Join Room
+          </button>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   return (
     <div className="chat-container">
