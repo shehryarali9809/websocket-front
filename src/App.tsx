@@ -13,7 +13,7 @@ function App() {
   useEffect(() => {
     if (!isJoined) return;
 
-    const ws = new WebSocket('http://localhost:8080')
+    const ws = new WebSocket('https://fatal-rozella-sherysdsdasd-1e3911d3.koyeb.app')
 
     ws.onopen = () => {
       console.log('Connected to WebSocket')
