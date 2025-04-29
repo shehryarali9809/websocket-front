@@ -19,6 +19,26 @@ interface TypingUser {
   timestamp: number;
 }
 
+// Available colors for user avatars - modern vibrant colors that work well on dark background
+const USER_COLORS = [
+  '#7C4DFF', // Purple
+  '#2196F3', // Blue
+  '#00BCD4', // Cyan
+  '#009688', // Teal
+  '#4CAF50', // Green
+  '#8BC34A', // Light Green
+  '#CDDC39', // Lime
+  '#FFC107', // Amber
+  '#FF9800', // Orange
+  '#FF5722', // Deep Orange
+  '#F44336', // Red
+  '#E91E63', // Pink
+  '#9C27B0', // Deep Purple
+  '#673AB7', // Deep Purple
+  '#3F51B5', // Indigo
+  '#607D8B', // Blue Grey
+];
+
 function App() {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -35,6 +55,35 @@ function App() {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([])
   const chatBoxRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<number | null>(null)
+  const [userColors, setUserColors] = useState<Record<string, string>>({})
+
+  // Generate a unique color for a username
+  const getUserColor = (username: string) => {
+    if (userColors[username]) {
+      return userColors[username];
+    }
+
+    // Simple hash function to generate a consistent index based on username
+    const hash = username.split('').reduce((acc, char) => {
+      return acc + char.charCodeAt(0);
+    }, 0);
+
+    const colorIndex = hash % USER_COLORS.length;
+    const color = USER_COLORS[colorIndex];
+
+    // Save this color for the username
+    setUserColors(prev => ({
+      ...prev,
+      [username]: color
+    }));
+
+    return color;
+  };
+
+  // Update document title
+  useEffect(() => {
+    document.title = "Shery Chat App";
+  }, []);
 
   // Check URL for room and username on initial load
   useEffect(() => {
@@ -289,11 +338,6 @@ function App() {
     }).format(timestamp);
   }
 
-  // Update document title
-  useEffect(() => {
-    document.title = "Shery Chat App";
-  }, []);
-
   // Initial username screen
   if (!isUsernameEntered) {
     return (
@@ -420,7 +464,7 @@ function App() {
                 className={`message-wrapper ${msg.sender === username ? 'sent' : 'received'}`}
               >
                 <div className="message-content">
-                  <div className="sender-avatar">
+                  <div className="sender-avatar" style={{ backgroundColor: getUserColor(msg.sender) }}>
                     {msg.sender[0].toUpperCase()}
                   </div>
                   <div className="message-bubble">
@@ -462,7 +506,9 @@ function App() {
         <div className="users-list">
           {activeUsers.map((user, index) => (
             <div key={index} className="user-item">
-              <div className="user-avatar">{user[0].toUpperCase()}</div>
+              <div className="user-avatar" style={{ backgroundColor: getUserColor(user) }}>
+                {user[0].toUpperCase()}
+              </div>
               <span>{user}</span>
             </div>
           ))}
