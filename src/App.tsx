@@ -60,6 +60,7 @@ function App() {
       url.searchParams.set('room', room);
       url.searchParams.set('username', username);
       window.history.pushState({}, '', url.toString());
+      document.title = `${room} | Shery Chat App`;
     }
   }, [isJoined, room, username]);
 
@@ -288,13 +289,18 @@ function App() {
     }).format(timestamp);
   }
 
+  // Update document title
+  useEffect(() => {
+    document.title = "Shery Chat App";
+  }, []);
+
   // Initial username screen
   if (!isUsernameEntered) {
     return (
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">
-            <h1>Welcome to Chat</h1>
+            <h1>Shery Chat App</h1>
             <p>Enter your username to start</p>
           </div>
           <div className="login-form">
@@ -328,8 +334,8 @@ function App() {
       <div className="login-container">
         <div className="login-card room-selection">
           <div className="login-header">
-            <h1>Welcome, {username}</h1>
-            <p>Create a new room or join an existing one</p>
+            <h1>Shery Chat App</h1>
+            <p>Welcome, {username}! Create a new room or join an existing one</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}
@@ -396,7 +402,10 @@ function App() {
     <div className="chat-container">
       <div className="chat-main">
         <div className="chat-header">
-          <h1>Room: {room}</h1>
+          <div>
+            <h1>Shery Chat App</h1>
+            <p className="room-title">Room: {room}</p>
+          </div>
           <button className="leave-room-button" onClick={leaveRoom}>Leave Room</button>
         </div>
         <div className="chat-box" ref={chatBoxRef}>

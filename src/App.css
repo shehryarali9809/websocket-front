@@ -35,6 +35,13 @@
   color: #333;
 }
 
+.room-title {
+  margin: 5px 0 0;
+  font-size: 1rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
 .chat-box {
   flex: 1;
   padding: 20px;
