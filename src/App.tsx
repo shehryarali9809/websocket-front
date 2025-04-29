@@ -14,6 +14,11 @@ interface Room {
   createdAt: Date;
 }
 
+interface TypingUser {
+  username: string;
+  timestamp: number;
+}
+
 function App() {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -27,7 +32,9 @@ function App() {
   const [availableRooms, setAvailableRooms] = useState<Room[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([])
   const chatBoxRef = useRef<HTMLDivElement>(null)
+  const typingTimeoutRef = useRef<number | null>(null)
 
   // Check URL for room and username on initial load
   useEffect(() => {
@@ -56,12 +63,22 @@ function App() {
     }
   }, [isJoined, room, username]);
 
+  // Cleanup typing users who have stopped typing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setTypingUsers(prev => prev.filter(user => now - user.timestamp < 3000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, typingUsers])
 
   // Fetch available rooms when username is entered
   useEffect(() => {
@@ -162,6 +179,15 @@ function App() {
           }));
           setMessages(formattedMessages);
         }
+      } else if (data.type === 'typing') {
+        if (data.username !== username) {
+          setTypingUsers(prev => {
+            // Remove the user if they're already in the list
+            const filtered = prev.filter(user => user.username !== data.username);
+            // Add them with the new timestamp
+            return [...filtered, { username: data.username, timestamp: Date.now() }];
+          });
+        }
       } else if (data.type === 'error') {
         setError(data.message)
         setIsJoined(false)
@@ -200,6 +226,24 @@ function App() {
       setError('')
     }
   }
+
+  const handleTyping = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      // Only send typing event if we haven't sent one recently
+      if (typingTimeoutRef.current === null) {
+        socket.send(JSON.stringify({
+          type: 'typing',
+          room,
+          username
+        }));
+
+        // Set a timeout to prevent sending too many typing events
+        typingTimeoutRef.current = window.setTimeout(() => {
+          typingTimeoutRef.current = null;
+        }, 2000);
+      }
+    }
+  };
 
   const sendMessage = () => {
     if (socket && message) {
@@ -381,12 +425,23 @@ function App() {
               </div>
             ))
           )}
+
+          {typingUsers.length > 0 && (
+            <div className="typing-indicator">
+              {typingUsers.length === 1 ? (
+                <p>{typingUsers[0].username} is typing...</p>
+              ) : (
+                <p>Multiple people are typing...</p>
+              )}
+            </div>
+          )}
         </div>
         <div className="input-area">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleTyping}
             placeholder="Type a message..."
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
           />
